@@ -13,3 +13,7 @@ wheels/
 .env
 .env.*
 !.env.example
+
+# Database
+app/data/
+*.db
