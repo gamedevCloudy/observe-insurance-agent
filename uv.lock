@@ -1359,6 +1359,7 @@ dependencies = [
     { name = "langchain-openrouter" },
     { name = "langgraph" },
     { name = "python-dotenv" },
+    { name = "sqlalchemy" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -1376,6 +1377,7 @@ requires-dist = [
     { name = "langchain-openrouter", specifier = ">=0.2.3" },
     { name = "langgraph", specifier = ">=1.2.6" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
+    { name = "sqlalchemy", specifier = ">=2.0.51" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.49.0" },
 ]
 
