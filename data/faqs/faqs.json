@@ -1,0 +1,82 @@
+[
+  {
+    "question": "What are your office hours?",
+    "answer": "Our office hours are Monday through Friday, 8:00 AM to 6:00 PM Eastern Time. We are closed on major holidays. For urgent claims, you can file online 24/7 at observeinsurance.com/claims."
+  },
+  {
+    "question": "What is the mailing address for the Northeast district?",
+    "answer": "For the Northeast district, please mail documents to: Observe Insurance, Northeast Regional Office, 200 Park Avenue, Suite 400, New York, NY 10166."
+  },
+  {
+    "question": "What is the mailing address for the Southeast district?",
+    "answer": "For the Southeast district, please mail documents to: Observe Insurance, Southeast Regional Office, 3500 Lenox Road, Suite 800, Atlanta, GA 30326."
+  },
+  {
+    "question": "What is the mailing address for the Midwest district?",
+    "answer": "For the Midwest district, please mail documents to: Observe Insurance, Midwest Regional Office, 233 South Wacker Drive, Suite 2500, Chicago, IL 60606."
+  },
+  {
+    "question": "What is the mailing address for the Southwest district?",
+    "answer": "For the Southwest district, please mail documents to: Observe Insurance, Southwest Regional Office, 500 North Akard Street, Suite 1200, Dallas, TX 75201."
+  },
+  {
+    "question": "What is the mailing address for the West district?",
+    "answer": "For the West district, please mail documents to: Observe Insurance, West Regional Office, 555 California Street, Suite 2100, San Francisco, CA 94104."
+  },
+  {
+    "question": "How do I start a new insurance claim?",
+    "answer": "To start a new claim: 1) Call our claims hotline at 1-800-555-CLAIM, 2) Visit observeinsurance.com/claims and file online, 3) Use our mobile app, or 4) Contact your assigned agent directly. You will need your policy number and details about the incident."
+  },
+  {
+    "question": "What is the general claims process?",
+    "answer": "The general claims process: 1) File your claim online, by phone, or through your agent. 2) A claims adjuster is assigned within 24-48 hours. 3) Document the damage and submit photos if requested. 4) The adjuster reviews your claim and any supporting documents. 5) You receive a settlement decision. 6) Upon approval, payment is issued within 5-10 business days."
+  },
+  {
+    "question": "What is the Silver insurance plan?",
+    "answer": "The Silver plan is our entry-level tier. It covers essential health benefits including hospitalization, prescription drugs, and preventive care. Deductible: $3,000 individual / $6,000 family. Monthly premium starts at $250. Out-of-pocket maximum: $7,500. Ideal for individuals who want basic coverage at an affordable price."
+  },
+  {
+    "question": "What is the Gold insurance plan?",
+    "answer": "The Gold plan offers comprehensive coverage with moderate deductibles. It includes all Silver benefits plus expanded specialist access and mental health coverage. Deductible: $1,500 individual / $3,000 family. Monthly premium starts at $400. Out-of-pocket maximum: $5,000. Our most popular plan for families."
+  },
+  {
+    "question": "What is the Diamond insurance plan?",
+    "answer": "The Diamond plan provides premium coverage with low deductibles. Includes all Gold benefits plus dental, vision, and chiropractic care. Deductible: $500 individual / $1,000 family. Monthly premium starts at $600. Out-of-pocket maximum: $3,000. Best for those who want comprehensive protection with minimal out-of-pocket costs."
+  },
+  {
+    "question": "What is the Platinum insurance plan?",
+    "answer": "The Platinum plan is our top-tier offering with the lowest out-of-pocket costs. Includes all Diamond benefits plus concierge health services, international coverage, and wellness programs. Deductible: $0 individual / $0 family. Monthly premium starts at $900. Out-of-pocket maximum: $1,500. Designed for those who want the most complete coverage available."
+  },
+  {
+    "question": "What is the Bronze insurance plan?",
+    "answer": "The Bronze plan is our most affordable option for basic catastrophic coverage. It covers essential health benefits with a higher deductible. Deductible: $5,000 individual / $10,000 family. Monthly premium starts at $180. Out-of-pocket maximum: $9,000. Suitable for healthy individuals who want protection against major medical expenses."
+  },
+  {
+    "question": "How can I check the status of my existing claim?",
+    "answer": "You can check your claim status by: 1) Logging into your account at observeinsurance.com/my-claims, 2) Calling our claims line at 1-800-555-CLAIM with your claim ID, 3) Contacting your assigned agent, or 4) Using our mobile app. Please have your claim ID or policy number ready."
+  },
+  {
+    "question": "What documents do I need to file a claim?",
+    "answer": "Required documents vary by claim type, but generally you need: your policy number, date and description of the incident, photos of damage, police report (if applicable), receipts for damaged items, and any third-party contact information. Your adjuster will let you know if additional documents are needed."
+  },
+  {
+    "question": "How long does the claims process take?",
+    "answer": "Standard claims are typically processed within 10-15 business days from the time all required documents are received. Complex claims involving significant damage or liability disputes may take 30-45 days. You will receive updates at each stage. Expedited processing is available for Diamond and Platinum plan holders."
+  },
+  {
+    "question": "What does my insurance policy cover?",
+    "answer": "Coverage depends on your plan tier (Bronze, Silver, Gold, Diamond, or Platinum). All plans cover essential health benefits including hospitalization, emergency services, prescription drugs, and preventive care. Higher tiers add dental, vision, mental health, and wellness benefits. Log into your account or call us for a detailed breakdown of your specific plan."
+  },
+  {
+    "question": "How does my deductible work?",
+    "answer": "Your deductible is the amount you pay out-of-pocket before your insurance begins covering costs. For example, if your deductible is $1,500, you pay the first $1,500 of covered expenses, then your plan covers a percentage of remaining costs. Deductibles reset annually. Some preventive services are covered before meeting your deductible."
+  },
+  {
+    "question": "How do I pay my insurance premium?",
+    "answer": "Premiums can be paid: 1) Online at observeinsurance.com/pay, 2) Through our mobile app, 3) By phone at 1-800-555-PAY, 4) By mailing a check to your regional office, or 5) Via automatic bank draft (auto-pay). We accept credit/debit cards, ACH transfers, and personal checks. Monthly, quarterly, and annual payment schedules are available."
+  },
+  {
+    "question": "What are the different ways to contact Observe Insurance?",
+    "answer": "You can reach us by: Phone: 1-800-555-OBSERVE (6273), available Mon-Fri 8AM-6PM ET. Email: support@observeinsurance.com. Live chat: available on our website and mobile app. In-person: visit any of our 5 regional offices. Mail: send correspondence to your district's regional office. For emergencies after hours, call our 24/7 claims hotline at 1-800-555-CLAIM."
+  }
+]
