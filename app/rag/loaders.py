@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
 
-from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pypdf import PdfReader
 
 from app.core.config import DATA_DIR
 
@@ -30,13 +30,19 @@ def load_pdfs() -> list[Document]:
     splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
     docs = []
     for pdf_path in sorted(pdf_dir.glob("*.pdf")):
-        loader = PyPDFLoader(str(pdf_path))
-        raw_docs = loader.load()
-        for doc in raw_docs:
-            doc.metadata["doc_type"] = "pdf"
-            doc.metadata["source"] = f"pdfs/{pdf_path.name}"
-        docs.extend(splitter.split_documents(raw_docs))
-    return docs
+        reader = PdfReader(str(pdf_path))
+        for i, page in enumerate(reader.pages):
+            text = page.extract_text()
+            if text.strip():
+                docs.append(Document(
+                    page_content=text,
+                    metadata={
+                        "doc_type": "pdf",
+                        "source": f"pdfs/{pdf_path.name}",
+                        "page": i,
+                    },
+                ))
+    return splitter.split_documents(docs)
 
 
 def load_all_documents() -> list[Document]:
