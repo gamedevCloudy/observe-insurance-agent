@@ -8,10 +8,11 @@ from app.agents.call_agent.prompt import SYSTEM_PROMPT
 from app.agents.call_agent.tools import ALL_TOOLS
 from app.llm.openrouter import get_openrouter_client
 
+_llm = get_openrouter_client().bind_tools(ALL_TOOLS)
 
-def _agent_node(state: MessagesState) -> dict:
-    llm = get_openrouter_client().bind_tools(ALL_TOOLS)
-    response = llm.invoke([SystemMessage(content=SYSTEM_PROMPT)] + state["messages"])
+
+async def _agent_node(state: MessagesState) -> dict:
+    response = await _llm.ainvoke([SystemMessage(content=SYSTEM_PROMPT)] + state["messages"])
     return {"messages": [response]}
 
 

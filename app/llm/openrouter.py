@@ -8,6 +8,7 @@ def get_openrouter_client() -> ChatOpenRouter:
         model=OPENROUTER_MODEL,
         temperature=0,
         max_retries=2,
+        streaming=True,
     )
 
 

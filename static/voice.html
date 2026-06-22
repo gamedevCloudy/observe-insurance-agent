@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Observe Insurance — Voice Agent</title>
+<style>
+  :root { --bg:#0f1117; --fg:#e6e6e6; --muted:#8b8b8b; --accent:#4a9eff; --ok:#3ddc84; --err:#ff6b6b; --card:#1a1d27; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .app { width:100%; max-width:520px; }
+  h1 { font-size:1.25rem; font-weight:600; margin-bottom:4px; }
+  .sub { color:var(--muted); font-size:.85rem; margin-bottom:24px; }
+  .card { background:var(--card); border-radius:14px; padding:24px; margin-bottom:16px; }
+  .status { display:flex; align-items:center; gap:8px; font-size:.9rem; margin-bottom:16px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:var(--muted); }
+  .dot.live { background:var(--ok); animation:pulse 1.5s infinite; }
+  .dot.thinking { background:var(--accent); animation:pulse 1s infinite; }
+  .dot.err { background:var(--err); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .btn { width:100%; padding:14px; border:none; border-radius:10px; font-size:1rem; font-weight:600; cursor:pointer; background:var(--accent); color:#fff; transition:background .2s; }
+  .btn:hover { background:#3a8eef; }
+  .btn:disabled { background:#333; color:#666; cursor:not-allowed; }
+  .btn.stop { background:var(--err); }
+  .partial { color:var(--muted); font-style:italic; font-size:.85rem; min-height:1.2em; margin-bottom:8px; }
+  .log { max-height:280px; overflow-y:auto; font-size:.85rem; line-height:1.5; }
+  .log .row { padding:6px 0; border-bottom:1px solid #ffffff0a; }
+  .log .row .who { font-weight:600; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; }
+  .log .row.you .who { color:var(--accent); }
+  .log .row.ai .who { color:var(--ok); }
+  .log .row.sys .who { color:var(--err); }
+  .log .row .txt { color:var(--fg); margin-top:2px; }
+  .hint { color:var(--muted); font-size:.75rem; text-align:center; margin-top:8px; }
+  .input-row { display:flex; gap:8px; margin-top:12px; }
+  .input-row input { flex:1; padding:10px 12px; border-radius:10px; border:1px solid #333; background:#0f1117; color:var(--fg); font-size:.9rem; }
+  .input-row input:focus { outline:none; border-color:var(--accent); }
+  .input-row button { padding:10px 16px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; }
+  .input-row button:disabled { background:#333; color:#666; cursor:not-allowed; }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Observe Insurance — Voice Agent</h1>
+  <p class="sub">AI Claims Support Assistant</p>
+  <div class="card">
+    <div class="status"><span class="dot" id="dot"></span><span id="status">Disconnected</span></div>
+    <button class="btn" id="toggle">Start Call</button>
+    <p class="hint" id="hint">Click to connect, then allow microphone access.</p>
+  </div>
+  <div class="card">
+    <div class="partial" id="partial"></div>
+    <div class="log" id="log"></div>
+    <div class="input-row">
+      <input id="text" type="text" placeholder="Type a message…" autocomplete="off" disabled />
+      <button id="send" disabled>Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const log = $('log'), dot = $('dot'), statusEl = $('status'), toggle = $('toggle'), partialEl = $('partial');
+
+let ws = null, micCtx = null, procNode = null, micStream = null;
+let audioCtx = null, speaking = false;
+let nextStartTime = 0, activeNodes = 0;
+let pcmLeftover = new Uint8Array(0);
+let pendingClose = false;
+const sendBtn = $('send'), textInput = $('text');
+
+function setStatus(s, cls) { statusEl.textContent = s; dot.className = 'dot ' + (cls||''); }
+function addLog(who, txt) {
+  partialEl.textContent = '';
+  const row = document.createElement('div');
+  row.className = 'row ' + who;
+  row.innerHTML = `<div class="who">${who === 'ai' ? 'Agent' : who === 'you' ? 'You' : 'System'}</div><div class="txt"></div>`;
+  row.querySelector('.txt').textContent = txt;
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+}
+
+function connect() {
+  pendingClose = false;
+  ws = new WebSocket(location.origin.replace('http','ws') + '/voice/ws');
+  ws.binaryType = 'arraybuffer';
+  ws.onopen = () => { toggle.textContent = 'End Call'; toggle.classList.add('stop'); sendBtn.disabled = false; textInput.disabled = false; startMic(); };
+  ws.onclose = () => { setStatus('Disconnected', ''); stopAll(); toggle.textContent = 'Start Call'; toggle.classList.remove('stop'); sendBtn.disabled = true; textInput.disabled = true; };
+  ws.onerror = () => setStatus('Connection error', 'err');
+  ws.onmessage = onMsg;
+}
+
+async function onMsg(ev) {
+  if (ev.data instanceof ArrayBuffer) {
+    const incoming = new Uint8Array(ev.data);
+    const merged = new Uint8Array(pcmLeftover.byteLength + incoming.byteLength);
+    merged.set(pcmLeftover, 0);
+    merged.set(incoming, pcmLeftover.byteLength);
+    const evenLen = merged.byteLength - (merged.byteLength % 2);
+    if (evenLen >= 2) {
+      playPcm(new Int16Array(merged.buffer, 0, evenLen / 2));
+    }
+    pcmLeftover = merged.slice(evenLen);
+  } else {
+    const d = JSON.parse(ev.data);
+    if (d.type === 'partial') { partialEl.textContent = d.text + '…'; }
+    else if (d.type === 'transcript') { addLog('you', d.text); }
+    else if (d.type === 'start_of_turn') { stopPlayback(); partialEl.textContent = ''; }
+    else if (d.type === 'thinking') setStatus('Looking up…', 'thinking');
+    else if (d.type === 'closed') { addLog('sys', `Call closed: ${d.reason}`); setStatus('Call ended', 'err'); pendingClose = true; stopMic(); maybeFinalizeClose(); }
+    else if (d.type === 'error') { addLog('sys', `Error: ${d.detail}`); setStatus('Error', 'err'); }
+    else if (d.type === 'done') { setStatus(micStream ? 'Connected — speak or type' : 'Connected — type your message', 'live'); }
+  }
+}
+
+async function startMic() {
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio:{ channelCount:1, echoCancellation:true, noiseSuppression:true } });
+    micCtx = new AudioContext({ sampleRate: 16000 });
+    const src = micCtx.createMediaStreamSource(micStream);
+    procNode = micCtx.createScriptProcessor(4096, 1, 1);
+    procNode.onaudioprocess = onAudio;
+    src.connect(procNode);
+    procNode.connect(micCtx.destination);
+    setStatus('Connected — speak or type', 'live');
+  } catch (err) {
+    setStatus('Connected — type your message', 'live');
+  }
+}
+
+function onAudio(e) {
+  if (!ws || ws.readyState !== 1) return;
+  const buf = e.inputBuffer.getChannelData(0);
+  ws.send(floatTo16(buf).buffer);
+}
+
+function floatTo16(buf) {
+  const out = new Int16Array(buf.length);
+  for (let i = 0; i < buf.length; i++) {
+    let s = Math.max(-1, Math.min(1, buf[i]));
+    out[i] = s < 0 ? s*0x8000 : s*0x7fff;
+  }
+  return out;
+}
+
+function playPcm(s16) {
+  if (!audioCtx) { audioCtx = new AudioContext({ sampleRate: 24000 }); nextStartTime = audioCtx.currentTime; }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  speaking = true;
+  setStatus('Agent speaking…', 'live');
+  const f32 = new Float32Array(s16.length);
+  for (let i = 0; i < s16.length; i++) f32[i] = s16[i] / 0x8000;
+  const ab = audioCtx.createBuffer(1, f32.length, 24000);
+  ab.copyToChannel(f32, 0);
+  const node = audioCtx.createBufferSource();
+  node.buffer = ab;
+  node.connect(audioCtx.destination);
+  const now = audioCtx.currentTime;
+  if (nextStartTime < now) nextStartTime = now;
+  node.start(nextStartTime);
+  nextStartTime += ab.duration;
+  activeNodes++;
+  node.onended = () => {
+    activeNodes--;
+    if (activeNodes === 0) {
+      speaking = false;
+      if (pendingClose) { maybeFinalizeClose(); return; }
+      if (ws && ws.readyState === 1) setStatus(micStream ? 'Connected — speak or type' : 'Connected — type your message', 'live');
+    }
+  };
+}
+
+function stopPlayback() {
+  speaking = false;
+  nextStartTime = 0;
+  activeNodes = 0;
+  pcmLeftover = new Uint8Array(0);
+  if (audioCtx) { audioCtx.close().then(()=>audioCtx=null); }
+}
+
+function stopMic() {
+  if (procNode) { procNode.disconnect(); procNode = null; }
+  if (micCtx) { micCtx.close().then(()=>micCtx=null); }
+  if (micStream) { micStream.getTracks().forEach(t=>t.stop()); micStream = null; }
+}
+
+function maybeFinalizeClose() {
+  if (!pendingClose || activeNodes > 0) return;
+  pendingClose = false;
+  if (ws) { ws.close(); }
+}
+
+function stopAll() {
+  stopMic();
+  stopPlayback();
+}
+
+toggle.onclick = () => {
+  pendingClose = false;
+  if (ws && ws.readyState <= 1) { stopAll(); ws.close(); ws = null; toggle.textContent = 'Start Call'; toggle.classList.remove('stop'); setStatus('Disconnected',''); }
+  else { connect(); toggle.classList.add('stop'); }
+};
+
+function sendText() {
+  const v = textInput.value.trim();
+  if (!v || !ws || ws.readyState !== 1) return;
+  ws.send(JSON.stringify({ type:'text', content:v }));
+  textInput.value = '';
+}
+sendBtn.onclick = sendText;
+textInput.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); sendText(); } };
+</script>
+</body>
+</html>
