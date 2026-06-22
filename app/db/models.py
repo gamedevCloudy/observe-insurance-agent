@@ -3,6 +3,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
 
+ESCALATION_REASONS = ("ask-human-support", "out-of-knowledge", "emergency")
+
 
 class Customer(Base):
     __tablename__ = "customer"
@@ -15,6 +17,7 @@ class Customer(Base):
 
     policies: Mapped[list["Policy"]] = relationship(back_populates="customer")
     call_logs: Mapped[list["CallLog"]] = relationship(back_populates="customer")
+    escalations: Mapped[list["EscalationLog"]] = relationship(back_populates="customer")
 
 
 class Policy(Base):
@@ -61,3 +64,20 @@ class CallLog(Base):
     duration: Mapped[int] = mapped_column(Integer, nullable=False)
 
     customer: Mapped["Customer | None"] = relationship(back_populates="call_logs")
+
+
+class EscalationLog(Base):
+    __tablename__ = "escalation_log"
+    __table_args__ = (
+        CheckConstraint(f"reason IN {ESCALATION_REASONS}"),
+    )
+
+    esc_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    cust_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("customer.cust_id"), nullable=True
+    )
+    reason: Mapped[str] = mapped_column(String, nullable=False)
+    note: Mapped[str] = mapped_column(String, nullable=False, default="")
+    created_at: Mapped[str] = mapped_column(String, nullable=False)
+
+    customer: Mapped["Customer | None"] = relationship(back_populates="escalations")

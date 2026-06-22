@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.db import database
-from app.db.models import CallLog, Claim, Customer, Policy
+from app.db.models import CallLog, Claim, Customer, EscalationLog, Policy  # noqa: F401
 
 
 @pytest.fixture(autouse=True)

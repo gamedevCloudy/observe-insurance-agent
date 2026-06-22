@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class CustomerOut(BaseModel):
@@ -51,5 +51,27 @@ class CallLogOut(BaseModel):
     start_time: str
     end_time: str
     duration: int
+
+    model_config = {"from_attributes": True}
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=1)
+    thread_id: str | None = None
+
+
+class EscalationLogCreate(BaseModel):
+    cust_id: int | None = None
+    reason: str
+    note: str = ""
+    created_at: str
+
+
+class EscalationLogOut(BaseModel):
+    esc_id: int
+    cust_id: int | None
+    reason: str
+    note: str
+    created_at: str
 
     model_config = {"from_attributes": True}
