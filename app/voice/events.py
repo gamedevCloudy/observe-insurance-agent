@@ -39,6 +39,7 @@ class TokenEvent(VoiceEvent):
 @dataclass
 class ThinkingEvent(VoiceEvent):
     type: Literal["thinking"] = "thinking"
+    name: str = ""
 
 
 @dataclass

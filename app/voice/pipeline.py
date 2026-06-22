@@ -83,7 +83,7 @@ async def agent_turn(
                     async for audio_chunk in stream_speak(for_tts(sentence)):
                         yield audio_chunk
             elif kind == "ToolMessage":
-                yield ThinkingEvent()
+                yield ThinkingEvent(name=chunk.name)
                 log.info("tool.call", tool=chunk.name)
                 if chunk.name == "escalate" and _tool_closed(chunk):
                     emergency = True
