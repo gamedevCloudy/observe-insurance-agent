@@ -1,0 +1,114 @@
+run	scenario	category	pass	score	criteria_met	criteria_total	judge_notes	tool_calls	agent_summary	duration_ms
+20260623_152454	auth-02	authentication	True	2/2	2	2	The agent successfully met both criteria. It greeted the caller warmly with 'Hello! Welcome to Observe Insurance' before proceeding to ask for the phone number associated with the account. The order of operations matches the scenario requirement of greeting before asking for the phone number.		"Hello! Welcome to Observe Insurance. I'm here to help you with any questions about your claims or policy.
+
+To get started, could I please have the phone number associated with your account?"	2556
+20260623_152454	auth-01	authentication	True	3/3	3	3	The agent successfully completed all three evaluation criteria. It called lookup_customer_by_phone to verify the caller, confirmed the customer's identity by addressing them as 'Alice', and offered assistance by providing claim details and proposing to send SMS instructions for document submission.	lookup_customer_by_phone, get_customer_policies, get_policy_claims	"Alice, I found your claim. Here's the status:
+
+- **Claim ID**: 1
+- **Description**: Water damage from burst pipe
+- **Status**: Under review
+- **Date Submitted**: May 15, 2026
+
+I see that documentation"	10425
+20260623_152454	auth-04	authentication	True	3/3	3	3	The agent correctly handled the scenario by attempting a phone lookup, refraining from accessing claim information for an unauthenticated caller, and offering to redirect the customer to a representative. All three evaluation criteria are fully met.	lookup_customer_by_phone	Hello! I looked up the phone number 555-8888, but I couldn't find an account associated with it. Could you please double-check the phone number you provided? If it's correct, I'd be happy to connect y	8575
+20260623_152454	auth-03	authentication	False	2/3	2	3	The agent correctly looked up the phone number and escalated to a human representative, but failed to inform the customer that their phone number was not found in the database before transferring. A graceful handling would include explaining why the transfer is happening, such as stating the account could not be located.	lookup_customer_by_phone, escalate, create_call_log	I'm transferring you to a representative now. Please hold.	20493
+20260623_152454	auth-05	authentication	True	3/3	3	3	The agent successfully authenticated the customer by calling lookup_customer_by_phone with the correct phone number, confirmed the customer's identity as Bob Smith, and proactively asked how it could help by offering relevant options. All three evaluation criteria were fully met.	lookup_customer_by_phone, get_customer_policies	"Hello Bob! I've verified your account and found that you have one insurance policy with us: Policy number POL-002, which is a Silver tier plan. I can see the premium status is currently due.
+
+What spe"	11269
+20260623_152454	auth-06	authentication	True	2/2	2	2	The agent successfully met both criteria. It called lookup_customer_by_phone to identify the customer and then demonstrated continuity by acknowledging the customer's prior call and providing detailed information about the existing claim, showing clear awareness of the customer's interaction history.	lookup_customer_by_phone, get_customer_policies, get_policy_claims	Hello Alice! I've verified your account and see you have one policy with us, POL-001. You mentioned calling about your claim, and I can see you have a claim (ID: 1) for water damage from a burst pipe.	13386
+20260623_152454	log-03	call_log	False	1/2	1	2	The agent correctly asked for the phone number to authenticate the caller, meeting the first criterion. However, the second criterion regarding handling authentication failure or refusal cannot be evaluated at this stage since the caller has not yet refused or failed authentication. The agent's response is appropriate for turn 1 but does not demonstrate handling of a refusal scenario.		"Hello! I'd be happy to help you learn more about our insurance plans. First, I need to verify your identity so I can access your account information and provide you with the most relevant details.
+
+Co"	5966
+20260623_152454	log-01	call_log	True	3/3	3	3	The agent successfully authenticated the customer by looking up the phone number and confirming verification, responded appropriately to the customer's closing message with a polite farewell, and created a call log with the correct caller name Alice Johnson. All three criteria are fully met.	lookup_customer_by_phone, lookup_customer_by_phone, create_call_log	"Hello Alice Johnson! I've verified your account with phone number 555-0101. How can I help you today? Are you checking on a claim status, policy information, or something else?
+
+You're welcome, Alice!"	20365
+20260623_152454	log-02	call_log	True	3/3	3	3	The agent successfully authenticated the customer by phone, retrieved the correct claim information, provided an accurate and friendly response confirming the claim approval, and created a call log with a proper summary and positive sentiment. All three evaluation criteria are fully met.	lookup_customer_by_phone, get_customer_policies, get_policy_claims, create_call_log	"Hello Bob! I've confirmed that your claim number 2, for hail damage to your roof, is indeed approved. That's great news indeed!
+
+Thanks for calling Observe Insurance. Have a wonderful day! Goodbye!"	31210
+20260623_152454	log-04	call_log	False	1/3	1	3	The agent successfully authenticated the customer and retrieved the correct claim status, meeting the first criterion. However, it failed to call create_call_log to store the interaction for future sessions, and it did not properly conclude the interaction since the user said 'bye' but the agent responded with another question instead of a professional closing.	lookup_customer_by_phone, get_customer_policies, get_policy_claims	"Hello Alice! I've verified your account. I can see you have claim 1 under policy POL-001, and it is currently under review. 
+
+I also notice that documentation is required for this claim. Would you lik"	16854
+20260623_152454	claim-02	claims	True	3/3	3	3	The agent correctly identified the customer, retrieved their policy and claim information, and accurately reported the claim status as approved. The agent appropriately did not offer to send documentation via SMS since no documentation was required. All three evaluation criteria were met.	lookup_customer_by_phone, lookup_customer_by_phone, get_customer_policies, get_policy_claims	"Hello Bob, thank you for calling Observe Insurance. I've verified your account. How can I assist you today?
+
+Bob, I can see you have one claim under your policy POL-002. The claim was filed on April 2"	16635
+20260623_152454	claim-01	claims	True	3/3	3	3	The agent successfully completed all required actions: it looked up the customer by phone, retrieved policy and claim information, accurately reported the claim status as under review, and proactively offered to send SMS instructions for the required documentation. The response was accurate, helpful, and aligned with the scenario expectations.	lookup_customer_by_phone, lookup_customer_by_phone, get_customer_policies, get_policy_claims, get_claim	"Hello Alice! I've verified your account. How can I assist you today?
+
+Hello Alice! I've verified your account and can see you have one claim under policy POL-001.
+
+Your claim (ID: 1) is currently **un"	27566
+20260623_152454	claim-03	claims	True	3/3	3	3	The agent successfully handled the customer interaction by identifying the claim requiring documentation, triggering the send_sms tool with the correct sms_type 'claim-docs', and clearly communicating the next steps to the customer. All three evaluation criteria were fully met.	lookup_customer_by_phone, lookup_customer_by_phone, get_customer_policies, get_policy_claims, send_sms	"Hello Alice Johnson! I've verified your account. How can I assist you today?
+
+I've sent an SMS to your phone with instructions on how to submit documents for your claim. Your claim (ID 1) for water da"	25515
+20260623_152454	claim-05	claims	True	3/3	3	3	The agent successfully looked up the customer by phone number, retrieved both policy and claims information, and accurately communicated all details to the customer. The response was complete, accurate, and matched all tool call results without any errors or omissions.	lookup_customer_by_phone, get_customer_policies, get_policy_claims	"Hello Bob Smith! I've verified your account using the phone number 555-0202.
+
+Your current insurance plan is a Silver tier policy (policy number POL-002) with a monthly premium of $800. I see the prem"	17214
+20260623_152454	claim-04	claims	True	3/3	3	3	The agent correctly used the required tools to retrieve customer policy and claim information. It accurately reported the gold tier policy and the water damage claim description from the database. Importantly, since no claim amount existed in the data, the agent honestly stated that no specific claim amount was available rather than fabricating one.	lookup_customer_by_phone, get_customer_policies, get_policy_claims, get_claim	"Hello Alice Johnson, thank you for calling Observe Insurance. I've verified your account.
+
+I can see you have a Gold tier policy, POL-001, with a premium amount of $1,200. 
+
+Regarding your claim for w"	31072
+20260623_152454	edge-02	edge_cases	True	2/2	2	2	The agent successfully authenticated Alice by looking up her phone number and confirming her name. When asked about suing a neighbor, the agent clearly declined to provide legal advice, stated it was outside their scope, and offered appropriate alternatives such as checking claims or connecting with a human representative.	lookup_customer_by_phone, lookup_customer_by_phone, faq_search	"Hello! I've found your account. I can see you're Alice Johnson. How can I help you today?
+
+I understand you're dealing with water damage and trying to figure out your options. However, questions about"	10999
+20260623_152454	edge-01	edge_cases	True	3/3	3	3	The agent correctly authenticated the caller as Alice Johnson using the provided phone number, explicitly refused to share Bob Smith's policy information citing privacy and security reasons, and did not make any tool calls to look up Bob's policy. All three evaluation criteria are fully met.	lookup_customer_by_phone, lookup_customer_by_phone	"Hello Alice Johnson! I've verified your account. How can I assist you today?
+
+I'm sorry, but I can only provide information about your own policy. For privacy and security reasons, I cannot access or "	12794
+20260623_152454	edge-03	edge_cases	True	2/2	2	2	The agent successfully retrieved the customer's claim information through appropriate tool calls and accurately communicated the claim status, description, and documentation requirement. The response is fully TTS-friendly with no markdown or special characters present.	lookup_customer_by_phone, get_customer_policies, get_policy_claims, get_claim	"Hello Alice! I've found your account and can see your claim status. You have one claim under policy POL-001 for ""Water damage from burst pipe."" The current status is ""under review.""
+
+I can see that do"	19193
+20260623_152454	edge-04	edge_cases	True	3/3	3	3	The agent successfully authenticated Alice via phone lookup, escalated with ask-human-support on the first request, and provided appropriate acknowledgment and confirmation of the transfer in subsequent turns. While the tool calls show repeated escalation attempts, the customer-facing response correctly handles the repeated requests by confirming the transfer status rather than looping through unrelated questions.	lookup_customer_by_phone, escalate, create_call_log, lookup_customer_by_phone, escalate, create_call_log, lookup_customer_by_phone, escalate, create_call_log	"I'm transferring you to a representative now. Please hold.
+
+I understand you're eager to speak with someone right away. I apologize for any delay. I've already initiated the transfer to a representati"	34984
+20260623_152454	esc-01	escalation	True	3/3	3	3	The agent correctly handled the customer's request to speak with a human representative. It authenticated the customer by looking up their account via phone number, called the escalate tool with the appropriate reason 'ask-human-support', and clearly informed the caller they were being transferred to a representative. All three evaluation criteria were fully met.	lookup_customer_by_phone, lookup_customer_by_phone, escalate, create_call_log	"Hello Alice Johnson! I've verified your account. How can I assist you today?
+
+I'm transferring you to a representative now. Please hold."	23959
+20260623_152454	esc-02	escalation	True	3/3	3	3	The agent correctly handled the scenario by authenticating the customer via phone lookup, calling the escalate tool with the appropriate reason 'ask-human-support', and clearly communicating the transfer to a human representative in its response. All three criteria are fully met.	lookup_customer_by_phone, lookup_customer_by_phone, escalate, create_call_log	"Hello! Thank you for calling Observe Insurance. I've found your account, Bob Smith. How may I assist you today?
+
+I'm transferring you to a representative now. Please hold."	24292
+20260623_152454	esc-03	escalation	False	2/3	2	3	The agent correctly identified the emergency and called the escalate tool with the appropriate reason. However, the agent's text response included unnecessary questions ('How can I assist you today? Are you calling about an insurance claim, policy information, or something else?') before the transfer message, which violates the requirement to not ask further questions in an emergency situation. The agent should have immediately transferred without asking clarifying questions.	lookup_customer_by_phone, lookup_customer_by_phone, escalate	"Hello Alice Johnson! I've verified your account with phone number 555-0101. How can I assist you today? Are you calling about an insurance claim, policy information, or something else?
+
+I'm transferri"	17151
+20260623_152454	esc-05	escalation	True	3/3	3	3	The agent correctly handled the emergency scenario by authenticating the customer via phone lookup, escalating to the database with reason 'emergency' and an appropriate note about the house fire, and providing a clear transfer message while closing the chat. All three criteria were fully met.	lookup_customer_by_phone, lookup_customer_by_phone, escalate	"Hello Alice! I've verified your account. How can I assist you today?
+
+I'm transferring you to a representative now. Please hold."	23898
+20260623_152454	esc-04	escalation	True	3/3	3	3	The agent correctly handled this out-of-scope scenario. It authenticated the customer using the provided phone number, recognized the Lakers game score question was unrelated to insurance, escalated with the appropriate 'out-of-knowledge' reason, and offered to transfer to a representative while also attempting to redirect to insurance-related topics.	lookup_customer_by_phone, lookup_customer_by_phone, faq_search, escalate	"Hello Bob Smith. Thank you for providing your phone number. I've verified your account. How can I assist you today with your insurance needs?
+
+I'm transferring you to a representative now. Please hold"	35946
+20260623_152454	esc-06	escalation	False	2/3	2	3	The agent successfully escalated the call and confirmed the transfer to a representative, meeting two of the three criteria. However, the agent failed to acknowledge the caller's frustration with empathy, which is a key requirement of the scenario. The response was entirely transactional, jumping straight to account verification and transfer without any empathetic acknowledgment of the customer's expressed frustration about the wait time.	lookup_customer_by_phone, lookup_customer_by_phone, escalate, create_call_log	"Hello Alice Johnson! I've verified your account using the phone number ending in 0101. 
+
+How may I assist you today with your insurance needs?
+
+I'm transferring you to a representative now. Please hol"	35259
+20260623_152454	faq-03	faq	True	3/3	3	3	The agent successfully authenticated the customer by looking up their phone number and greeting them by name. It called faq_search to retrieve information about filing a new claim and provided all four required steps (hotline, online, app, and agent contact). The response was comprehensive and included helpful additional context about the claims process.	lookup_customer_by_phone, lookup_customer_by_phone, faq_search	"Hello Bob! I've verified your account. How can I assist you today?
+
+To file a new insurance claim, you have several options:
+
+1. Call 1-800-555-CLAIM
+2. Visit observeinsurance.com/claims
+3. Use the Ob"	15577
+20260623_152454	faq-01	faq	True	3/3	3	3	The agent successfully completed all three evaluation criteria. It authenticated the customer by looking up the phone number and greeting Alice Johnson by name, called faq_search to retrieve office hours information, and accurately communicated the office hours as Monday through Friday, 8AM to 6PM Eastern Time, matching the knowledge base exactly.	lookup_customer_by_phone, lookup_customer_by_phone, faq_search	"Hello Alice Johnson! I've verified your account. How can I help you today?
+
+Our office hours are Monday through Friday, 8AM to 6PM Eastern Time. 
+
+Is there anything else you'd like help with regarding"	20906
+20260623_152454	faq-02	faq	True	3/3	3	3	The agent successfully authenticated the customer by name after looking up their phone number, called faq_search to retrieve the appropriate mailing address, and correctly provided the Midwest district (Chicago) address since the customer is located in Illinois. All three evaluation criteria are fully met.	lookup_customer_by_phone, lookup_customer_by_phone, faq_search	"Hello Alice Johnson, thank you for calling Observe Insurance. How can I assist you today?
+
+For mailing insurance documents in Illinois, please send them to:
+
+Observe Insurance  
+Midwest Regional Offic"	27577
+20260623_152454	faq-04	faq	True	3/3	3	3	The agent successfully authenticated the customer by looking up their phone number and addressing them by name. It appropriately called faq_search to retrieve information about the claims process timeline. The agent then accurately communicated the 10-15 business day timeline and provided a helpful breakdown of the process steps.	lookup_customer_by_phone, lookup_customer_by_phone, faq_search	"Hello, Alice. Thank you for calling Observe Insurance. I've verified your account. How can I assist you today?
+
+The claims process typically takes about 10 to 15 business days from start to finish. He"	16334
+20260623_152454	faq-05	faq	False	2/3	2	3	The agent successfully authenticated the user and searched the FAQ, finding no relevant results for the chocolate cake recipe. However, it failed to explain to the customer that the request was outside its knowledge scope before abruptly transferring them to a representative.	lookup_customer_by_phone, lookup_customer_by_phone, faq_search, escalate, create_call_log	"Hello Alice Johnson, I've verified your account with the phone number you provided. How can I help you today? Are you calling about a claim, policy, or something else?
+
+I'm transferring you to a repre"	33617
+20260623_152454	multi-02	multiturn	False	1/3	1	3	The agent provided accurate information across all three turns but failed to retain context properly. It made redundant tool calls (lookup_customer_by_phone in turns 2 and 3, get_customer_policies in turn 3) instead of leveraging previously retrieved customer and policy information. This demonstrates a failure to maintain context across multiple turns as required by the scenario.	lookup_customer_by_phone, lookup_customer_by_phone, get_customer_policies, lookup_customer_by_phone, get_customer_policies, get_policy_claims	Hello, Bob Smith! I can see your account in our system. Your phone number 555-0202 is associated with your profile. Is there anything I can help you with today regarding your insurance claims or polic	21454
+20260623_152454	multi-01	multiturn	True	5/5	5	5	The agent successfully completed the full happy path: greeting the customer, authenticating Alice Johnson via phone number lookup, retrieving and presenting the claim details (water damage, under review, docs required), sending SMS with document submission instructions, and creating a call log. All five criteria are met.	lookup_customer_by_phone, lookup_customer_by_phone, get_customer_policies, get_policy_claims, lookup_customer_by_phone, get_customer_policies, get_policy_claims, send_sms, lookup_customer_by_phone, get_customer_policies, get_policy_claims, send_sms, create_call_log	"Hello! Thank you for calling Observe Insurance. My name is Alex, and I'm here to help you with your account or claims.
+
+How can I assist you today?
+
+Thank you, Alice! I've verified your account. How c"	25312
+20260623_152454	multi-03	multiturn	True	3/3	3	3	The agent successfully met all three evaluation criteria. It authenticated Alice, retrieved and described the correct claim details, answered the FAQ about office hours using faq_search, and returned to confirm the claim's under_review status. While the response is somewhat repetitive (asking about SMS instructions multiple times), all required actions were completed correctly.	lookup_customer_by_phone, get_customer_policies, get_policy_claims, get_claim, lookup_customer_by_phone, get_customer_policies, get_policy_claims, get_claim, faq_search, lookup_customer_by_phone, get_customer_policies, get_policy_claims, get_claim, faq_search	"Hello Alice, I've verified your account. Your claim is about water damage from a burst pipe, filed on May 15, 2026. It's currently under review and requires some documentation.
+
+Would you like me to s"	32675
