@@ -16,6 +16,7 @@ RUN uv sync --frozen --no-dev
 COPY app/ app/
 COPY data/ data/
 COPY scripts/ scripts/
+COPY static/ static/
 
 ARG OPENROUTER_API_KEY
 ENV OPENROUTER_API_KEY=${OPENROUTER_API_KEY}

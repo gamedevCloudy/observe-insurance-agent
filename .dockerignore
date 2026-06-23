@@ -10,5 +10,3 @@ __pycache__
 *.pyc
 app/data/
 tests/
-*.pdf
-!data/pdfs/
