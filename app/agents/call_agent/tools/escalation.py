@@ -11,7 +11,7 @@ from app.schemas import EscalationLogCreate, EscalationLogOut
 
 @tool
 def escalate(reason: str, cust_id: int = 0, note: str = "") -> dict:
-    """Escalate the call to a human representative. reason: one of 'ask-human-support', 'out-of-knowledge', 'emergency'. Pass cust_id if the customer has been identified, and note with relevant context."""
+    """Escalate the call to a human representative. reason: one of 'ask-human-support', 'out-of-knowledge', 'emergency'. Pass cust_id if the customer has been identified, and note with relevant context. IMPORTANT: Only call this tool AFTER explaining the situation to the caller verbally. Do NOT use this tool just to offer a transfer — use words like 'Would you like me to connect you to a representative?' instead and only call this tool if they agree."""
     if reason not in ESCALATION_REASONS:
         return {"error": f"Invalid reason '{reason}'. Must be one of: {', '.join(sorted(ESCALATION_REASONS))}"}
 

@@ -10,7 +10,7 @@ from app.agents.call_agent.memory import store
 
 @tool
 def lookup_customer_by_phone(phone: str) -> dict:
-    """Look up a customer by their phone number. Returns customer details and any prior interaction history. Use this at the start of a call to authenticate the caller."""
+    """Look up a customer by their phone number. Call this EXACTLY ONCE per conversation at the start to authenticate. Returns customer details and prior interaction history. Do NOT call this tool again after it has succeeded in this conversation."""
     with SessionLocal() as db:
         try:
             customer = customers_route.lookup_customer(phone, db)
