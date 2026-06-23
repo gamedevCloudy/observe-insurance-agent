@@ -17,9 +17,12 @@ COPY app/ app/
 COPY data/ data/
 COPY scripts/ scripts/
 
+ARG OPENROUTER_API_KEY
+ENV OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+
 RUN mkdir -p app/data && \
     uv run python -m app.db.init_db && \
-    OPENROUTER_API_KEY=${OPENROUTER_API_KEY} uv run python -m app.rag.ingest
+    uv run python -m app.rag.ingest
 
 # ---- runtime ----
 FROM python:3.12-slim
