@@ -7,6 +7,9 @@ from uuid import uuid4
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 
+from datetime import datetime, timezone
+
+from app.agents.call_agent.memory import store
 from app.agents.graph import build_agent
 from app.core.logging import bind_session, clear_session, get_logger
 from app.voice.deepgram import StreamingSTT
@@ -38,6 +41,7 @@ async def voice_ws(websocket: WebSocket):
     await websocket.accept()
     thread_id = str(uuid4())
     bind_session(thread_id, thread_id)
+    store.put(("session", thread_id), "meta", {"started_at": datetime.now(timezone.utc).isoformat()})
     client = websocket.client.host if websocket.client else None
     log.info("session.start", client=client)
     current: asyncio.Task | None = None

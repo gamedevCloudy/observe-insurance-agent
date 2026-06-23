@@ -1,10 +1,12 @@
 import json
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from langchain_core.messages import AIMessageChunk, HumanMessage, ToolMessage
 
+from app.agents.call_agent.memory import store
 from app.agents.graph import build_agent
 from app.schemas import ChatRequest
 
@@ -27,6 +29,7 @@ def _is_emergency_escalation_closed(state) -> bool:
 
 async def _stream_events(body: ChatRequest):
     thread_id = body.thread_id or str(uuid4())
+    store.put(("session", thread_id), "meta", {"started_at": datetime.now(timezone.utc).isoformat()})
     yield f"event: thread\ndata: {json.dumps({'thread_id': thread_id})}\n\n"
 
     config = {"configurable": {"thread_id": thread_id}}
