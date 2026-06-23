@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 from app.agents.graph import build_agent
 from app.core.logging import bind_session, clear_session, get_logger
 from app.voice.deepgram import StreamingSTT
-from app.voice.events import PartialEvent, StartOfTurnEvent, VoiceEvent
+from app.voice.events import ErrorEvent, PartialEvent, StartOfTurnEvent, VoiceEvent
 from app.voice.pipeline import agent_turn
 
 log = get_logger("observeai.voice")
@@ -70,6 +70,7 @@ async def voice_ws(websocket: WebSocket):
             await _send_item(item, ws=websocket)
 
     async def drain_stt():
+        nonlocal transcript_count
         async for evt in stt.events():
             if evt.kind == "start_of_turn":
                 await websocket.send_text(StartOfTurnEvent().to_json())
@@ -78,11 +79,17 @@ async def voice_ws(websocket: WebSocket):
                 await websocket.send_text(PartialEvent(text=evt.transcript).to_json())
             elif evt.kind == "final":
                 if evt.transcript.strip():
+                    transcript_count += 1
                     log.info("stt.transcript", transcript=evt.transcript[:80])
                     await run_agent(evt.transcript)
+            elif evt.kind == "error":
+                log.warning("stt.error", detail=evt.transcript[:200])
+                await websocket.send_text(ErrorEvent(detail=evt.transcript).to_json())
 
     stt_task = asyncio.create_task(drain_stt())
 
+    audio_chunks = 0
+    transcript_count = 0
     reason = "client-disconnect"
     try:
         while True:
@@ -92,6 +99,9 @@ async def voice_ws(websocket: WebSocket):
             data = msg.get("bytes")
             text = msg.get("text")
             if data:
+                audio_chunks += 1
+                if audio_chunks == 1:
+                    log.info("audio.first", nbytes=len(data))
                 await stt.send_media(data)
             elif text:
                 try:
@@ -116,5 +126,5 @@ async def voice_ws(websocket: WebSocket):
             await stt_task
         await cancel_current()
         await stt.close()
-        log.info("session.end", reason=reason)
+        log.info("session.end", reason=reason, audio_chunks=audio_chunks, transcripts=transcript_count)
         clear_session()

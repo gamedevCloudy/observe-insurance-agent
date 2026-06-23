@@ -150,6 +150,10 @@ input[type=range]::-moz-range-thumb {
   border: none;
 }
 
+.mic-wrap { margin-top: 16px; }
+.meter { margin-top: 8px; height: 4px; background: var(--cds-layer-02); border-radius: 2px; overflow: hidden; }
+.meter-fill { height: 100%; width: 0%; background: var(--cds-support-success); transition: width 0.05s linear; }
+
 .orb-wrap {
   position: relative;
   width: 240px;
@@ -425,6 +429,10 @@ input[type=range]::-moz-range-thumb {
         <div class="timer-label">Call time</div>
         <div class="timer" id="timer">00:00</div>
       </div>
+      <div class="mic-wrap" id="mic-wrap" style="display:none;">
+        <div class="volume-label">Microphone</div>
+        <div class="meter"><div class="meter-fill" id="mic-fill"></div></div>
+      </div>
     </div>
 
     <div class="volume-wrap">
@@ -488,14 +496,17 @@ const toggle = $('toggle'), pill = $('pill'), emptyEl = $('empty');
 const ticker = $('ticker'), toolPill = $('tool-pill'), orb = $('orb');
 const sendBtn = $('send'), textInput = $('text'), volumeInput = $('volume');
 const typingEl = $('typing');
+const micWrap = $('mic-wrap'), micFill = $('mic-fill');
 
 let ws = null, micCtx = null, procNode = null, micStream = null;
+let micAnalyser = null, micVisRaf = null;
 let audioCtx = null, analyser = null, gainNode = null, visRaf = null;
 let nextStartTime = 0, activeNodes = 0;
 let pcmLeftover = new Uint8Array(0);
 let pendingClose = false, callEnded = false;
 let lastWho = null, timerInterval = null, timerStart = 0;
 let userPartial = '', aiBuffer = '';
+let micChunks = 0;
 
 function setStatus(s, cls) {
   statusEl.textContent = s;
@@ -634,6 +645,7 @@ function connect() {
   pendingClose = false;
   callEnded = false;
   lastWho = null;
+  micChunks = 0;
   setStatus('Connecting', 'thinking');
   ws = new WebSocket(location.origin.replace('http', 'ws') + '/voice/ws');
   ws.binaryType = 'arraybuffer';
@@ -646,7 +658,8 @@ function connect() {
     startTimer();
     setStatus('Connected', 'live');
   };
-  ws.onclose = () => {
+  ws.onclose = (ev) => {
+    console.log('[WS] closed', { code: ev.code, reason: ev.reason, wasClean: ev.wasClean });
     stopTimer();
     stopAll();
     toggle.textContent = 'Start Call';
@@ -731,18 +744,33 @@ async function onMsg(ev) {
 async function startMic() {
   try {
     micStream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+    console.log('[MIC] acquired', { label: micStream.getAudioTracks()[0]?.label, constraints: micStream.getAudioTracks()[0]?.getSettings() });
     micCtx = new AudioContext({ sampleRate: 16000 });
+    console.log('[AUDIO] ctx state before resume:', micCtx.state);
+    if (micCtx.state === 'suspended') await micCtx.resume();
+    console.log('[AUDIO] ctx state after resume:', micCtx.state);
     const src = micCtx.createMediaStreamSource(micStream);
+    micAnalyser = micCtx.createAnalyser();
+    micAnalyser.fftSize = 256;
+    src.connect(micAnalyser);
     procNode = micCtx.createScriptProcessor(4096, 1, 1);
     procNode.onaudioprocess = onAudio;
     src.connect(procNode);
     procNode.connect(micCtx.destination);
-  } catch (_) {}
+    micWrap.style.display = 'block';
+    startMicMeter();
+  } catch (err) {
+    console.error('[MIC] error', { name: err?.name, message: err?.message, constraint: err?.constraint });
+    addLog('sys', `Microphone error: ${err && err.message ? err.message : err}`);
+    setStatus('Mic error', 'err');
+  }
 }
 
 function onAudio(e) {
   if (!ws || ws.readyState !== 1) return;
   ws.send(floatTo16(e.inputBuffer.getChannelData(0)).buffer);
+  micChunks++;
+  if (micChunks % 100 === 0) console.log('[AUDIO] chunks sent', { total: micChunks, wsState: ws.readyState });
 }
 
 function floatTo16(buf) {
@@ -752,6 +780,29 @@ function floatTo16(buf) {
     out[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
   }
   return out;
+}
+
+function startMicMeter() {
+  if (micVisRaf || !micAnalyser) return;
+  const data = new Uint8Array(micAnalyser.frequencyBinCount);
+  function loop() {
+    if (!micAnalyser) return;
+    micAnalyser.getByteTimeDomainData(data);
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) {
+      const v = (data[i] - 128) / 128;
+      sum += v * v;
+    }
+    const rms = Math.sqrt(sum / data.length);
+    micFill.style.width = Math.min(100, rms * 300).toFixed(1) + '%';
+    micVisRaf = requestAnimationFrame(loop);
+  }
+  micVisRaf = requestAnimationFrame(loop);
+}
+
+function stopMicMeter() {
+  if (micVisRaf) { cancelAnimationFrame(micVisRaf); micVisRaf = null; }
+  if (micFill) micFill.style.width = '0%';
 }
 
 function startVisualizer() {
@@ -820,9 +871,12 @@ function stopPlayback() {
 }
 
 function stopMic() {
+  stopMicMeter();
   if (procNode) { procNode.disconnect(); procNode = null; }
+  if (micAnalyser) { micAnalyser = null; }
   if (micCtx) { micCtx.close().then(() => micCtx = null); }
   if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+  micWrap.style.display = 'none';
 }
 
 function maybeFinalizeClose() {

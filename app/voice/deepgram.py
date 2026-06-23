@@ -11,6 +11,9 @@ from app.core.config import (
     DEEPGRAM_EOT_TIMEOUT_MS,
     DEEPGRAM_MODEL,
 )
+from app.core.logging import get_logger
+
+log = get_logger("observeai.stt")
 
 _STOP = object()
 
@@ -46,15 +49,25 @@ class StreamingSTT:
         )
         self._conn = await self._ctx.__aenter__()
         self._conn.on(EventType.MESSAGE, self._on_message)
+        self._conn.on(EventType.ERROR, self._on_error)
         self._listen_task = asyncio.create_task(self._conn.start_listening())
 
+    def _on_error(self, exc) -> None:
+        detail = exc if isinstance(exc, str) else str(exc)
+        self._queue.put_nowait(STTEvent(kind="error", transcript=f"socket: {detail}"))
+
     def _on_message(self, msg) -> None:
-        event = getattr(msg, "event", None)
-        transcript = getattr(msg, "transcript", "") or ""
-        confidence = getattr(msg, "end_of_turn_confidence", 0.0) or 0.0
-        if event == "StartOfTurn":
+        dg_type = msg.get("type")
+        dg_event = msg.get("event")
+        transcript = msg.get("transcript", "") or ""
+        confidence = msg.get("end_of_turn_confidence", 0.0) or 0.0
+        log.info("stt.msg", dg_type=dg_type, dg_event=dg_event)
+        if dg_type in ("Error", "ConfigureFailure"):
+            self._queue.put_nowait(STTEvent(kind="error", transcript=transcript or str(msg.get("description", ""))))
+            return
+        if dg_event == "StartOfTurn":
             self._queue.put_nowait(STTEvent(kind="start_of_turn"))
-        elif event == "EndOfTurn":
+        elif dg_event == "EndOfTurn":
             self._queue.put_nowait(STTEvent(kind="final", transcript=transcript, confidence=confidence))
         elif transcript:
             self._queue.put_nowait(STTEvent(kind="partial", transcript=transcript))
@@ -65,7 +78,11 @@ class StreamingSTT:
 
     async def events(self) -> AsyncIterator[STTEvent]:
         while True:
-            item = await self._queue.get()
+            try:
+                item = await asyncio.wait_for(self._queue.get(), timeout=15)
+            except asyncio.TimeoutError:
+                log.warning("stt.silence", reason="no event in 15s")
+                continue
             if item is _STOP:
                 return
             yield item

@@ -1,15 +1,7 @@
 import asyncio
-from dataclasses import dataclass
 from unittest.mock import patch
 
 from app.voice.deepgram import StreamingSTT
-
-
-@dataclass
-class _Msg:
-    event: str | None = None
-    transcript: str = ""
-    end_of_turn_confidence: float = 0.0
 
 
 class _FakeConn:
@@ -69,9 +61,9 @@ async def _collect(stt: StreamingSTT) -> list:
 def test_start_of_turn_and_end_of_turn_parsing():
     async def run():
         msgs = [
-            _Msg(event="StartOfTurn"),
-            _Msg(event="Update", transcript="hello"),
-            _Msg(event="EndOfTurn", transcript="hello world", end_of_turn_confidence=0.9),
+            {"event": "StartOfTurn"},
+            {"event": "Update", "transcript": "hello"},
+            {"event": "EndOfTurn", "transcript": "hello world", "end_of_turn_confidence": 0.9},
         ]
         with patch("app.voice.deepgram.AsyncDeepgramClient", lambda **k: _FakeClient(msgs)):
             stt = StreamingSTT()
@@ -86,7 +78,7 @@ def test_start_of_turn_and_end_of_turn_parsing():
 
 def test_partial_only_when_transcript_present():
     async def run():
-        msgs = [_Msg(event="Update", transcript=""), _Msg(event="Update", transcript="hi")]
+        msgs = [{"event": "Update", "transcript": ""}, {"event": "Update", "transcript": "hi"}]
         with patch("app.voice.deepgram.AsyncDeepgramClient", lambda **k: _FakeClient(msgs)):
             stt = StreamingSTT()
             await stt.connect()
@@ -134,5 +126,18 @@ def test_events_without_connect_yields_nothing():
         async for e in stt.events():
             out.append(e)
         assert out == []
+
+    asyncio.run(run())
+
+
+def test_fatal_error_emits_error_event():
+    async def run():
+        msgs = [{"type": "Error", "description": "boom"}]
+        with patch("app.voice.deepgram.AsyncDeepgramClient", lambda **k: _FakeClient(msgs)):
+            stt = StreamingSTT()
+            await stt.connect()
+            out = await _collect(stt)
+        assert [e.kind for e in out] == ["error"]
+        assert "boom" in out[0].transcript
 
     asyncio.run(run())

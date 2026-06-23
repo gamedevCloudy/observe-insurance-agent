@@ -15,7 +15,7 @@ DATA_DIR: str = os.getenv("DATA_DIR", "data")
 DEEPGRAM_API_KEY: str = os.getenv("DEEPGRAM_API_KEY", "")
 DEEPGRAM_MODEL: str = os.getenv("DEEPGRAM_MODEL", "flux-general-en")
 DEEPGRAM_EOT_THRESHOLD: float = float(os.getenv("DEEPGRAM_EOT_THRESHOLD", "0.7"))
-DEEPGRAM_EOT_TIMEOUT_MS: int = int(os.getenv("DEEPGRAM_EOT_TIMEOUT_MS", "2000"))
+DEEPGRAM_EOT_TIMEOUT_MS: int = int(os.getenv("DEEPGRAM_EOT_TIMEOUT_MS", "5000"))
 
 TTS_MODEL: str = os.getenv("TTS_MODEL", "x-ai/grok-voice-tts-1.0")
 TTS_VOICE: str = os.getenv("TTS_VOICE", "Ara")

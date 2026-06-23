@@ -77,6 +77,22 @@ def _scripted_events():
     ]
 
 
+def _error_then_final_events():
+    from app.voice.deepgram import STTEvent
+
+    return [
+        STTEvent(kind="error", transcript="INTERNAL_SERVER_ERROR: boom"),
+        STTEvent(kind="final", transcript="hi", confidence=0.9),
+    ]
+
+
+@pytest.fixture()
+def _mock_voice_error(monkeypatch):
+    monkeypatch.setattr(voice, "_agent", _fake_agent([AIMessageChunk(content="ok.")]))
+    monkeypatch.setattr("app.voice.pipeline.stream_speak", _fake_tts)
+    monkeypatch.setattr("app.routes.voice.StreamingSTT", lambda: _FakeSTT(_error_then_final_events()))
+
+
 def _collect_ws(ws):
     events = []
     audio = b""
@@ -122,3 +138,14 @@ def test_voice_ws_text_input_sends_start_of_turn(_mock_voice_text):
     assert "transcript" in types
     assert types[-1] == "done"
     assert audio == b"Hello there."
+
+
+def test_voice_ws_forwards_stt_error(_mock_voice_error):
+    with client.websocket_connect("/voice/ws") as ws:
+        events, _ = _collect_ws(ws)
+
+    types = [e["type"] for e in events]
+    assert "error" in types
+    err = next(e for e in events if e["type"] == "error")
+    assert "INTERNAL_SERVER_ERROR" in err["detail"]
+    assert types[-1] == "done"
