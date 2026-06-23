@@ -37,6 +37,7 @@ ENV PATH="/app/.venv/bin:/root/.local/bin:${PATH}" \
     VIRTUAL_ENV="/app/.venv"
 
 COPY --from=builder /app/app /app/app
+COPY --from=builder /app/static /app/static
 COPY --from=builder /app/data /app/data
 COPY --from=builder /app/scripts /app/scripts
 
